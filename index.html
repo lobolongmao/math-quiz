@@ -244,10 +244,11 @@
 
             container.innerHTML = htmlContent;
 
-            // Trigger initial MathJax render for questions
-            MathJax.typesetPromise([container]).then(() => {
-                console.log('MathJax initial typeset complete');
-            });
+            // MathJax may finish loading after the page structure is ready.
+            // Wait for its startup process before rendering the inserted questions.
+            MathJax.startup.promise
+                .then(() => MathJax.typesetPromise([container]))
+                .catch((err) => console.error('MathJax initial typeset failed:', err));
         });
 
         /**
@@ -309,8 +310,10 @@
                 inputElement.classList.remove('border-slate-300');
                 inputElement.classList.add('border-red-300');
                 
-                // Dynamically typeset the newly injected math solution
-                MathJax.typesetPromise([feedbackDiv]).catch((err) => console.log('MathJax typeset failed: ', err));
+                // Wait for MathJax before rendering dynamically inserted solutions.
+                MathJax.startup.promise
+                    .then(() => MathJax.typesetPromise([feedbackDiv]))
+                    .catch((err) => console.error('MathJax solution typeset failed:', err));
             }
             
             feedbackDiv.classList.remove('hidden');
