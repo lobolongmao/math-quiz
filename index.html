@@ -42,7 +42,12 @@
             }
         };
     </script>
-    <script id="MathJax-script" defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script
+        id="MathJax-script"
+        defer
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"
+        onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';"
+    ></script>
 </head>
 <body class="text-slate-800 antialiased min-h-screen pb-20">
 
@@ -205,6 +210,22 @@
             }
         ];
 
+        function waitForMathJax() {
+            return new Promise((resolve, reject) => {
+                const startedAt = Date.now();
+                const check = () => {
+                    if (window.MathJax?.startup?.promise) {
+                        window.MathJax.startup.promise.then(resolve, reject);
+                    } else if (Date.now() - startedAt > 10000) {
+                        reject(new Error('MathJax did not load within 10 seconds'));
+                    } else {
+                        window.setTimeout(check, 50);
+                    }
+                };
+                check();
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const container = document.getElementById('quiz-container');
             
@@ -246,7 +267,7 @@
 
             // MathJax may finish loading after the page structure is ready.
             // Wait for its startup process before rendering the inserted questions.
-            MathJax.startup.promise
+            waitForMathJax()
                 .then(() => MathJax.typesetPromise([container]))
                 .catch((err) => console.error('MathJax initial typeset failed:', err));
         });
@@ -311,7 +332,7 @@
                 inputElement.classList.add('border-red-300');
                 
                 // Wait for MathJax before rendering dynamically inserted solutions.
-                MathJax.startup.promise
+                waitForMathJax()
                     .then(() => MathJax.typesetPromise([feedbackDiv]))
                     .catch((err) => console.error('MathJax solution typeset failed:', err));
             }
