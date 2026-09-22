@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中數學總複習 - 多項式函數互動測驗</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        /* Smooth fade-in animation */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.4s ease-out forwards;
+        }
+        .math-scroll {
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+    </style>
+
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: { fontCache: 'global' },
+            startup: {
+                typeset: false // We will trigger typeset manually after rendering the DOM
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body class="text-slate-800 antialiased min-h-screen pb-20">
+
+    <header class="bg-gradient-to-r from-blue-800 to-slate-800 text-white shadow-xl">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight">多項式函數總複習</h1>
+            <p class="mt-3 text-lg md:text-xl text-blue-200 font-medium">線上互動測驗 (25題中等題型)</p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+        
+        <!-- Instructions -->
+        <div class="bg-white rounded-xl shadow-sm border border-blue-100 p-6 mb-8">
+            <h2 class="text-xl font-bold text-blue-800 mb-3 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                測驗說明
+            </h2>
+            <ul class="list-disc list-inside text-slate-600 space-y-2">
+                <li>請在每題下方的輸入框中填入答案。</li>
+                <li>若答案為代數式，請依序填寫（例如：<code class="bg-slate-100 px-1 rounded text-blue-600">2x+1</code>）。</li>
+                <li>系統會自動忽略答案中的空格與大小寫差異。</li>
+                <li>完成作答後點擊「送出」，系統會立即批改；若答錯將會顯示詳細解析。</li>
+            </ul>
+        </div>
+
+        <div id="quiz-container" class="space-y-8">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+    </main>
+
+    <script>
+        // 25 道題目資料陣列，包含 question, answer (嚴格比對用), solution
+        const questionsData = [
+            {
+                q: "若多項式 $f(x)$ 除以 $x-2$ 的餘式為 $5$，除以 $x+3$ 的餘式為 $-5$，則 $f(x)$ 除以 $(x-2)(x+3)$ 的餘式為何？",
+                a: "2x+1",
+                s: "設餘式為 $ax+b$，則 $f(x) = (x-2)(x+3)Q(x) + (ax+b)$。<br>由餘式定理知：$f(2) = 5$，$f(-3) = -5$。<br>代入得聯立方程式：<br>$$\\begin{cases} 2a+b=5 \\\\ -3a+b=-5 \\end{cases}$$<br>解得 $a=2, b=1$。故餘式為 $2x+1$。"
+            },
+            {
+                q: "已知 $f(x)$ 除以 $x^2-1$ 餘 $3x+2$，求 $f(x)$ 除以 $x-1$ 的餘式。",
+                a: "5",
+                s: "由題意 $f(x) = (x^2-1)Q(x) + 3x+2 = (x-1)(x+1)Q(x) + 3x+2$。<br>根據餘式定理，要求除以 $x-1$ 的餘式即為求 $f(1)$。<br>代入 $x=1$：$f(1) = 0 + 3(1)+2 = 5$。"
+            },
+            {
+                q: "設 $f(x) = 2x^{100} - 3x^{50} + 4x^5 - 1$，求 $f(x)$ 除以 $x+1$ 的餘式。",
+                a: "-6",
+                s: "根據餘式定理，除以 $x+1$ 的餘式為 $f(-1)$。<br>$$f(-1) = 2(-1)^{100} - 3(-1)^{50} + 4(-1)^5 - 1$$<br>計算得：$2(1) - 3(1) + 4(-1) - 1 = -6$。"
+            },
+            {
+                q: "若 $f(x)$ 除以 $(x-1)^2$ 餘 $2x+1$，求 $f(x)$ 除以 $x-1$ 的餘式。",
+                a: "3",
+                s: "由除法原理，$f(x) = (x-1)^2 Q(x) + (2x+1)$。<br>求除以 $x-1$ 的餘式即為求 $f(1)$。<br>代入 $x=1$ 得 $f(1) = 0 + 2(1)+1 = 3$。"
+            },
+            {
+                q: "若多項式 $f(x)$ 除以 $2x-1$ 餘 $4$，求 $xf(x)$ 除以 $x-\\frac{1}{2}$ 的餘式。",
+                a: "2",
+                s: "由題意，根據餘式定理 $f(\\frac{1}{2}) = 4$。<br>要求 $xf(x)$ 除以 $x-\\frac{1}{2}$ 的餘式，由餘式定理需代入 $x=\\frac{1}{2}$。<br>餘式 = $\\frac{1}{2} \\times f(\\frac{1}{2}) = \\frac{1}{2} \\times 4 = 2$。"
+            },
+            {
+                q: "已知 $(x-2)$ 為 $f(x) = x^3 - kx^2 + 5x - 6$ 的因式，求實數 $k$ 的值。",
+                a: "3",
+                s: "根據因式定理，若 $(x-2)$ 為因式，則 $f(2) = 0$。<br>代入 $x=2$：$f(2) = 8 - 4k + 10 - 6 = 0$。<br>整理得：$12 - 4k = 0 \\implies k = 3$。"
+            },
+            {
+                q: "若 $x^2-x-2$ 是 $x^4 - 2x^3 + ax^2 + bx + 4$ 的因式，求 $a+b$ 之值。",
+                a: "1",
+                s: "將 $x^2-x-2$ 分解為 $(x-2)(x+1)$。<br>故 $f(2)=0$ 且 $f(-1)=0$。<br>$f(2) = 16 - 16 + 4a + 2b + 4 = 0 \\implies 2a+b = -2$。<br>$f(-1) = 1 + 2 + a - b + 4 = 0 \\implies a-b = -7$。<br>兩式相加得 $3a = -9 \\implies a=-3$，代入得 $b=4$。故 $a+b=1$。"
+            },
+            {
+                q: "若多項式 $f(x)$ 滿足 $f(1)=0, f(2)=0, f(3)=0$，且 $\\deg f(x)=3$，最高次項係數為 $2$，求 $f(0)$ 的值。",
+                a: "-12",
+                s: "根據因式定理，$f(x)$ 有因式 $(x-1), (x-2), (x-3)$。<br>設 $f(x) = 2(x-1)(x-2)(x-3)$。<br>代入 $x=0$：$f(0) = 2(-1)(-2)(-3) = -12$。"
+            },
+            {
+                q: "方程式 $x^3 - 6x^2 + 11x - 6 = 0$ 的最大實根為何？",
+                a: "3",
+                s: "測試 $x=1$：$1-6+11-6=0$，故 $(x-1)$ 為因式。<br>綜合除法得原式 = $(x-1)(x^2-5x+6) = 0$。<br>再分解得 $(x-1)(x-2)(x-3) = 0$。<br>三根為 $1, 2, 3$，最大根為 $3$。"
+            },
+            {
+                q: "已知二次函數 $f(x)$ 滿足 $f(1)=2, f(2)=3, f(3)=6$，求 $f(4)$。",
+                a: "11",
+                s: "使用牛頓插值法設 $f(x) = a(x-1)(x-2) + b(x-1) + c$。<br>$f(1) = c = 2$。<br>$f(2) = b(1) + 2 = 3 \\implies b = 1$。<br>$f(3) = a(2)(1) + 1(2) + 2 = 6 \\implies 2a = 2 \\implies a = 1$。<br>故 $f(x) = (x-1)(x-2) + (x-1) + 2$。<br>$f(4) = (3)(2) + 3 + 2 = 11$。"
+            },
+            {
+                q: "求多項式 $3x^3 - 4x^2 + 2x - 5$ 除以 $x-2$ 的餘式。",
+                a: "7",
+                s: "利用餘式定理，求 $f(2)$：<br>$f(2) = 3(2)^3 - 4(2)^2 + 2(2) - 5$<br>$= 3(8) - 4(4) + 4 - 5 = 24 - 16 + 4 - 5 = 7$。"
+            },
+            {
+                q: "將 $f(x) = x^3 - 5x^2 + 8x - 4$ 展開為 $a(x-1)^3 + b(x-1)^2 + c(x-1) + d$，求常數項 $d$ 的值。",
+                a: "0",
+                s: "求 $d$ 相當於求 $f(x)$ 除以 $x-1$ 的餘式，即 $f(1)$。<br>$f(1) = 1 - 5 + 8 - 4 = 0$。<br>故 $d = 0$。"
+            },
+            {
+                q: "承上題，若已知展開式為 $f(x) = (x-1)^3 - 2(x-1)^2 + (x-1)$，求 $f(0.99)$ 的近似值至小數點後第二位。",
+                a: "-0.01",
+                s: "代入 $x=0.99$：$f(0.99) = (-0.01)^3 - 2(-0.01)^2 + (-0.01)$。<br>$-0.01$ 平方以後極小，近似值由一次項決定。<br>$f(0.99) \\approx -0.01$。"
+            },
+            {
+                q: "求 $2x^3 - 5x^2 + 3x - 1$ 除以 $2x-3$ 的餘式。",
+                a: "-1",
+                s: "根據餘式定理，除式為 $2x-3=0 \\implies x=3/2$。<br>代入 $x=3/2$ 計算：$2(27/8) - 5(9/4) + 3(3/2) - 1$<br>$= 27/4 - 45/4 + 18/4 - 4/4 = -4/4 = -1$。"
+            },
+            {
+                q: "求 $x^4 - 3x^3 + 2x^2 + x - 1$ 除以 $x^2-2x+2$ 的餘式。",
+                a: "-x+3",
+                s: "利用長除法：<br>1. 商 $x^2$ $\\implies$ 餘 $-x^3 + x - 1$<br>2. 商 $-x$ $\\implies$ 餘 $-2x^2 + 3x - 1$<br>3. 商 $-2$ $\\implies$ 餘 $-x + 3$<br>故餘式為 $-x+3$。"
+            },
+            {
+                q: "若三次多項式 $f(x)$ 的圖形交 $x$ 軸於 $(-1,0), (2,0), (3,0)$，且通過點 $(1, 4)$，求 $f(0)$ 的值。",
+                a: "6",
+                s: "設 $f(x) = a(x+1)(x-2)(x-3)$。<br>代入 $(1, 4)$：$a(1+1)(1-2)(1-3) = 4 \\implies 4a=4 \\implies a=1$。<br>故 $f(x) = (x+1)(x-2)(x-3)$。<br>$f(0) = (1)(-2)(-3) = 6$。"
+            },
+            {
+                q: "方程式 $x^3 - 3x^2 + 2x = 0$ 的所有實根之總和為何？",
+                a: "3",
+                s: "提公因式 $x$：$x(x^2 - 3x + 2) = 0$<br>分解：$x(x-1)(x-2) = 0$<br>三根為 $0, 1, 2$。總和為 $0+1+2=3$。<br>（或直接使用根與係數關係：$-\\frac{-3}{1} = 3$）。"
+            },
+            {
+                q: "若方程式 $x^3 - 3x + k = 0$ 有一重根，且 $k>0$，求 $k$ 的值。",
+                a: "2",
+                s: "設重根為 $\\alpha$，另一根為 $\\beta$。<br>由根與係數，$\\alpha+\\alpha+\\beta=0 \\implies \\beta = -2\\alpha$。<br>兩兩相乘和：$\\alpha^2 + 2\\alpha\\beta = -3 \\implies -3\\alpha^2 = -3 \\implies \\alpha = \\pm 1$。<br>三根乘積：$\\alpha^2\\beta = -k \\implies \\alpha^2(-2\\alpha) = -k \\implies 2\\alpha^3 = k$。<br>因為 $k>0$，故 $\\alpha = 1$，此時 $k=2$。"
+            },
+            {
+                q: "已知 $x^4 + 2x^3 - 7x^2 - 8x + 12 = 0$，求其最小實根。",
+                a: "-3",
+                s: "利用牛頓定理，代入 $x=1$ 得 $0$，有因式 $(x-1)$。<br>除以 $x-1$ 得商式 $x^3 + 3x^2 - 4x - 12 = 0$。<br>分組提出 $x^2(x+3) - 4(x+3) = 0 \\implies (x^2-4)(x+3) = 0$。<br>故四根為 $1, 2, -2, -3$。最小實根為 $-3$。"
+            },
+            {
+                q: "實係數多項式 $f(x) = x^3 + ax^2 + bx + c$ 中，若 $1+i$ 是一根，且 $f(0)=4$，求 $a+b+c$ 的值。",
+                a: "2",
+                s: "實係數方程式虛根成對，故 $1-i$ 亦為一根。<br>$(x-(1+i))(x-(1-i)) = x^2-2x+2$。<br>設 $f(x) = (x^2-2x+2)(x-k)$。<br>$f(0) = 2(-k) = 4 \\implies k=-2$。<br>故 $f(x) = (x^2-2x+2)(x+2) = x^3 - 2x + 4$。<br>比較係數：$a=0, b=-2, c=4$。故 $a+b+c = 2$。"
+            },
+            {
+                q: "判斷 $f(x) = x^3 - 3x - 1 = 0$ 在區間 $(1, 2)$ 內是否有實根？請回答「有」或「無」。",
+                a: "有",
+                s: "利用勘根定理檢查區間端點函數值。<br>$f(1) = 1^3 - 3(1) - 1 = -3 < 0$<br>$f(2) = 2^3 - 3(2) - 1 = 8 - 6 - 1 = 1 > 0$<br>因為 $f(1) \\cdot f(2) < 0$ 且為連續函數，故區間內至少有1實根。答：有。"
+            },
+            {
+                q: "方程式 $x^3 - x^2 - 2x + 1 = 0$ 的三個實根分別在連續整數區間 $(n, n+1)$ 中，求這三個 $n$ 值的總和。",
+                a: "-1",
+                s: "設 $f(x) = x^3 - x^2 - 2x + 1$。<br>$f(-2)=-7, f(-1)=1 \\implies$ 根在 $(-2,-1)$，即 $n=-2$<br>$f(0)=1, f(1)=-1 \\implies$ 根在 $(0,1)$，即 $n=0$<br>$f(1)=-1, f(2)=1 \\implies$ 根在 $(1,2)$，即 $n=1$<br>總和 = $-2 + 0 + 1 = -1$。"
+            },
+            {
+                q: "已知 $\\deg f(x)=3$ 且領導係數為 $1$。若 $f(1)=1, f(2)=2, f(3)=3$，求 $f(4)$ 的值。",
+                a: "10",
+                s: "觀察規律，令 $g(x) = f(x) - x$。<br>則 $g(1)=0, g(2)=0, g(3)=0$。<br>因 $f(x)$ 領導係數為 1，故 $g(x) = 1(x-1)(x-2)(x-3)$。<br>$f(x) = (x-1)(x-2)(x-3) + x$<br>$f(4) = (3)(2)(1) + 4 = 10$。"
+            },
+            {
+                q: "多項式 $P(x)$ 被 $x^2+1$ 除餘 $x+2$，被 $x+1$ 除餘 $3$。求 $P(x)$ 被 $(x^2+1)(x+1)$ 除的餘式的常數項。",
+                a: "3",
+                s: "設餘式為 $R(x) = a(x^2+1) + (x+2)$。<br>根據餘式定理 $P(-1) = 3$，故 $R(-1) = 3$。<br>代入：$a(1+1) + (-1+2) = 3 \\implies 2a+1=3 \\implies a=1$。<br>餘式 $R(x) = 1(x^2+1) + x + 2 = x^2+x+3$。<br>常數項為 $3$。"
+            },
+            {
+                q: "若 $x^4 + ax^2 + b$ 可被 $(x-1)^2$ 整除，求 $a-b$ 之值。",
+                a: "-3",
+                s: "設 $f(x) = x^4 + ax^2 + b$。<br>$f(1) = 1 + a + b = 0 \\implies a+b=-1$。<br>利用微分 $f'(x) = 4x^3 + 2ax$，因含有重根 $(x-1)^2$，故 $f'(1) = 0$。<br>$4 + 2a = 0 \\implies a = -2$。<br>代回得 $b = 1$。故 $a-b = -2 - 1 = -3$。"
+            }
+        ];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById('quiz-container');
+            
+            let htmlContent = '';
+            questionsData.forEach((item, index) => {
+                const qNum = index + 1;
+                htmlContent += `
+                    <div class="bg-white rounded-xl shadow border border-slate-200 overflow-hidden" id="card-${index}">
+                        <div class="p-5 md:p-7">
+                            <h3 class="font-bold text-lg text-blue-700 mb-3 border-l-4 border-blue-500 pl-3">
+                                第 ${qNum} 題
+                            </h3>
+                            <div class="text-slate-700 text-lg leading-relaxed mb-5 math-scroll">
+                                ${item.q}
+                            </div>
+                            
+                            <!-- Input section -->
+                            <div class="flex flex-col sm:flex-row gap-3 mt-4 items-stretch sm:items-center">
+                                <input type="text" id="input-${index}" placeholder="請輸入答案" 
+                                    class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    onkeypress="handleKeyPress(event, ${index})"
+                                >
+                                <button onclick="checkAnswer(${index})" id="btn-${index}"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200 shadow-sm whitespace-nowrap">
+                                    送出
+                                </button>
+                            </div>
+
+                            <!-- Feedback section (Hidden initially) -->
+                            <div id="feedback-${index}" class="hidden mt-5 p-4 rounded-lg border text-base">
+                                <!-- Content injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = htmlContent;
+
+            // Trigger initial MathJax render for questions
+            MathJax.typesetPromise([container]).then(() => {
+                console.log('MathJax initial typeset complete');
+            });
+        });
+
+        /**
+         * Allows pressing Enter to submit the answer
+         */
+        function handleKeyPress(event, index) {
+            if (event.key === 'Enter') {
+                checkAnswer(index);
+            }
+        }
+
+        /**
+         * Normalizes strings by removing spaces and making lowercase for comparison
+         */
+        function normalizeString(str) {
+            return str.replace(/\s+/g, '').toLowerCase();
+        }
+
+        /**
+         * Checks the student's answer and provides feedback
+         */
+        function checkAnswer(index) {
+            const inputElement = document.getElementById(`input-${index}`);
+            const btnElement = document.getElementById(`btn-${index}`);
+            const feedbackDiv = document.getElementById(`feedback-${index}`);
+            const cardElement = document.getElementById(`card-${index}`);
+            
+            const studentAns = inputElement.value;
+            const correctAns = questionsData[index].a;
+
+            // Normalizing for robust comparison
+            if (normalizeString(studentAns) === normalizeString(correctAns)) {
+                // Correct State
+                feedbackDiv.className = 'mt-5 p-4 rounded-lg border text-base border-green-200 bg-green-50 animate-fade-in-down';
+                feedbackDiv.innerHTML = `<span class="font-bold text-green-700 flex items-center"><svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 答對了！</span>`;
+                
+                // Visual feedback on input
+                inputElement.classList.remove('border-slate-300', 'border-red-300');
+                inputElement.classList.add('border-green-500', 'bg-green-50');
+                inputElement.disabled = true;
+                btnElement.disabled = true;
+                btnElement.classList.replace('bg-blue-600', 'bg-slate-400');
+                btnElement.classList.replace('hover:bg-blue-700', 'bg-slate-400');
+                
+            } else {
+                // Incorrect State
+                const solutionHtml = questionsData[index].s;
+                feedbackDiv.className = 'mt-5 p-5 rounded-lg border text-base border-red-200 bg-red-50/50 animate-fade-in-down';
+                feedbackDiv.innerHTML = `
+                    <div class="font-bold text-red-600 flex items-center mb-3">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> 
+                        答錯了，請參考解析：
+                    </div>
+                    <div class="text-slate-700 math-scroll bg-white p-4 rounded border border-red-100">
+                        ${solutionHtml}
+                    </div>
+                `;
+                
+                inputElement.classList.remove('border-slate-300');
+                inputElement.classList.add('border-red-300');
+                
+                // Dynamically typeset the newly injected math solution
+                MathJax.typesetPromise([feedbackDiv]).catch((err) => console.log('MathJax typeset failed: ', err));
+            }
+            
+            feedbackDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
